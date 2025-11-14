@@ -1,0 +1,22 @@
+{
+  "status": "fail",
+  "issues": [
+    {
+      "code": "COMMAND_MISSING",
+      "detail": "WINDOWS_SDK missing: signtool.exe"
+    },
+    {
+      "code": "COMMAND_MISSING",
+      "detail": "VISUAL_CPP_BUILD_TOOLS missing: msbuild.exe"
+    }
+  ],
+  "checklist": [
+    "Install Windows SDK to obtain signtool.exe",
+    "Install Visual C++ Build Tools to provide msbuild.exe"
+  ],
+  "versions": {
+    "node": "22.18.0",
+    "electron": "28.2.2",
+    "electronBuilder": "25"
+  }
+}

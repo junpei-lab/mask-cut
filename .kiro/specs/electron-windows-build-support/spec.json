@@ -1,0 +1,22 @@
+{
+  "feature_name": "electron-windows-build-support",
+  "created_at": "2025-11-12T08:28:26Z",
+  "updated_at": "2025-11-12T09:42:00Z",
+  "language": "ja",
+  "phase": "tasks-generated",
+  "approvals": {
+    "requirements": {
+      "generated": true,
+      "approved": true
+    },
+    "design": {
+      "generated": true,
+      "approved": true
+    },
+    "tasks": {
+      "generated": true,
+      "approved": true
+    }
+  },
+  "ready_for_implementation": true
+}

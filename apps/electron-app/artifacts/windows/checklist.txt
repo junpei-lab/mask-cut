@@ -1,0 +1,2 @@
+- Install Windows SDK to obtain signtool.exe
+- Install Visual C++ Build Tools to provide msbuild.exe

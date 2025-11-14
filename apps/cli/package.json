@@ -7,7 +7,7 @@
     "mask-cut": "dist/index.js"
   },
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "node ./scripts/clean.js",
     "build": "pnpm run clean && tsup",
     "dev": "tsx src/index.ts",
     "start": "pnpm run build && node dist/index.js --help",
@@ -19,7 +19,6 @@
     "@mask-cut/text-llm-core": "workspace:*"
   },
   "devDependencies": {
-    "rimraf": "^5.0.5",
     "tsup": "^7.2.0",
     "tsx": "^4.7.0"
   }

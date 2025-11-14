@@ -13,10 +13,10 @@ EARS (Easy Approach to Requirements Syntax) is the standard format for acceptanc
 ### 2. State-Driven Requirements
 - **Pattern**: While [precondition], the [system] shall [response/action]
 - **Use Case**: Behavior dependent on system state or preconditions
-- **Example**: While cart is empty, the Checkout Service shall display empty cart message
+- **Example**: While payment is processing, the Checkout Service shall display loading indicator
 
 ### 3. Unwanted Behavior Requirements
-- **Pattern**: If [trigger], then the [system] shall [response/action]
+- **Pattern**: If [trigger], the [system] shall [response/action]
 - **Use Case**: System response to errors, failures, or undesired situations
 - **Example**: If invalid credit card number is entered, then the website shall display error message
 

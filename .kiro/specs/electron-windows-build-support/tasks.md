@@ -1,0 +1,84 @@
+# Implementation Plan
+
+- [x] 1. WinBuild Orchestrator CLI
+- [x] 1.1 CLIエントリとコンテキスト生成
+  - `pnpm --filter @mask-cut/electron-app build:win` で受け取るターゲット・署名モード・チャネルを解析し、PipelineContextを構築する
+  - CLIオプションのバリデーション結果をJSON Linesに記録し、後続フェーズの入力を一元管理する
+  - _Requirements: 1.1,1.4,2.4_
+- [x] 1.2 フェーズ実行とイベント出力
+  - ToolchainProbe→Builder→Signing→SmokeTest→Stageの順にフェーズを呼び出し、失敗時は直ちに停止する制御を実装する
+  - 各フェーズの開始/終了イベントを標準出力とaudit-logに書き込み、CIが解析できるようにする
+  - _Requirements: 1.1,1.5,3.5_
+- [x] 1.3 `build.meta.json` とlockfileガード読み込み
+  - バージョン・チャネル等のメタデータを読み込み、欠落時はフェイルさせる
+  - `pnpm-lock.yaml` と承認済みロックハッシュを比較し、差分を持つ場合は明示的なエラーで停止する
+  - _Requirements: 1.2,2.5_
+
+- [x] 2. Toolchain Probe とチェックリスト
+- [x] 2.1 Node/Electron/electron-builder検証
+  - 実行環境のバージョンを取得し、win-build設定で定義した許容範囲と比較する
+  - バージョン不一致時はトラブルシュート手順を含むissues配列を作成する
+  - _Requirements: 2.1_
+- [x] 2.2 Windows SDK / Visual C++ Build Tools / signtool検出
+  - PowerShellやwhere.exeで必須コマンドを探索し、見つからない場合はToolchainReportに記録する
+  - CLI実行がローカルかCIかを判定し、ローカル時は不足項目をchecklist.txtに書き出す
+  - _Requirements: 2.3,2.4_
+- [x] 2.3 出力フォーマットとCI連携
+  - ToolchainReportをJSONで保存し、Orchestratorから参照可能にする
+  - 重大な欠落がある場合はCIステップを失敗させる出口コードを返す
+  - _Requirements: 2.1,2.3_
+
+- [x] 3. Electron Builderアダプタと成果物生成
+- [x] 3.1 electron-builder設定とターゲットマトリクス
+  - Windowsインストーラー(NSIS)とポータブルZIPの設定テンプレートを用意し、共通ブランド情報を適用する
+  - 指定アーキテクチャごとにターゲットを展開し、未指定アーキはスキップする
+  - _Requirements: 1.1,1.3,1.4_
+- [x] 3.2 アイコン・バージョン・メタ情報の注入
+  - `assets/icon.png` を設定に組み込み、アプリ名や会社名をbrandingファイルから読み込む
+  - `build.meta.json`のバージョンをelectron-builderに渡し、成果物ファイル名へ組み込む
+  - _Requirements: 1.2,1.3_
+- [x] 3.3 成果物とハッシュのマニフェスト化
+  - 生成されたexe/zip最新YMLのパスとSHA-512を計算し、ArtifactManifestServiceへ渡す
+  - マニフェストに保存パス・署名有無・チェックサムを記録し、リリースゲートと監査ログで再利用できるようにする
+  - _Requirements: 1.5,3.3_
+
+- [x] 4. Signing Manager と署名モード制御
+- [x] 4.1 証明書パラメータ検証
+  - 環境変数や設定ファイルから証明書パスとパスフレーズを読み取り、存在しない場合の挙動を分岐する
+  - `required`モードでは即時フェイル、`allow-skip`モードではunsignedメタデータを記録する
+  - _Requirements: 2.2,1.3_
+- [x] 4.2 signtool呼び出しとタイムスタンプ
+  - 各成果物に対してsigntool.exeを呼び出し、タイムスタンプサーバーURLを設定する
+  - 署名結果をsignatures.jsonに記録し、後続のSmokeTestとManifestで参照できるようにする
+  - _Requirements: 1.3,3.1_
+
+- [x] 5. Smoke Test Harness とGate制御
+- [x] 5.1 SMOKE_TEST_MODE起動パス
+  - スモークテスト用にexe/portableをヘッドレスで起動し、設定保存→masking実行→結果取得までの最小フローを自動化する
+  - 成功/失敗ログをsmoke-test-report.jsonにまとめ、失敗時は再現手順も記録する
+  - _Requirements: 3.1,3.2_
+- [x] 5.2 ReleaseGatekeeper判定とステージング配置
+  - ToolchainReportとSmokeTestReportを参照し、GateDecisionを算出する
+  - 合格時のみ成果物をステージング領域に配置し、latest.ymlやapp-update.jsonにステージングURLとチェックサムを反映する
+  - _Requirements: 3.2,3.3,3.4_
+
+- [x] 6. Artifact Manifest / Audit Logging
+- [x] 6.1 Manifestスキーマ実装
+  - version/channel/status/各成果物のsha512/signedフラグを含むartifact-manifest.jsonを構築する
+  - SmokeTestReportとToolchainReportへの参照パスを格納する
+  - _Requirements: 1.5,3.3_
+- [x] 6.2 監査ログとCI公開
+  - build開始/終了、各フェーズの結果、git SHAをaudit-log.jsonlへ追記する
+  - CIからartifact-manifest・reports・ログを成果物としてアップロードするフックを追加する
+  - _Requirements: 3.5,3.3_
+
+- [x] 7. テストと検証
+- [x] 7.1 ToolchainProbe単体テスト
+  - バージョン境界やlockfile差分のケースをモックで検証する
+  - _Requirements: 2.1,2.5_
+- [x] 7.2 Orchestrator統合テスト
+  - フェーズをモック化したユニットでhappy path/失敗パスを実行し、停止条件とイベント出力を確認する
+  - _Requirements: 1.1,3.5_
+- [x] 7.3 SmokeTestHarness E2E
+  - 生成物をダミー設定で起動し、SMOKE_TEST_MODEの結果を検証する自動テストを用意する
+  - _Requirements: 3.1,3.2_

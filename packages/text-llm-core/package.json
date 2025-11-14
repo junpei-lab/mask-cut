@@ -16,11 +16,11 @@
   },
   "scripts": {
     "build": "pnpm run clean && tsup src/index.ts --dts --format cjs,esm --sourcemap",
-    "clean": "rimraf dist",
+    "clean": "node ./scripts/clean.js",
     "lint": "tsc --noEmit",
     "test": "echo 'No tests yet'"
   },
   "devDependencies": {
-    "rimraf": "^5.0.5"
+    "rimraf": "^6.1.0"
   }
 }
