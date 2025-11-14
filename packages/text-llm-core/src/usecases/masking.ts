@@ -29,7 +29,7 @@ export async function maskSensitiveInfo(
   const maskUnknown = options.maskUnknownEntities ?? false;
 
   const userPrompt = `
-以下のテキストの中から、人名・社名・組織名にあたる部分をマスキングしてください。
+以下のテキストの中から、固有名詞（人名・社名・組織名・住所・郵便番号・電話番号・メールアドレス・固有名詞に付随する読み仮名など）にあたる部分をマスキングしてください。
 
 - マスクに使う記号: ${maskToken}
 - 文字数を保つ: ${toJapaneseBoolean(keepLength)}
@@ -37,6 +37,7 @@ export async function maskSensitiveInfo(
 - あいまいな固有名詞もマスクする: ${toJapaneseBoolean(maskUnknown)}
 
 出力は「元のテキストと同じ形式」で、マスクしたい部分だけを置き換えてください。
+同じ固有名詞が複数回登場する場合は、漏れなくすべてマスクしてください。
 余計な説明文やコメントは一切書かず、「テキストのみ」を返してください。
 
 テキスト:
