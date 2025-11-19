@@ -1,0 +1,26 @@
+{
+  "name": "@mask-cut/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "clean": "node ./scripts/clean.js",
+    "build": "pnpm run clean && tsc -p tsconfig.build.json",
+    "dev": "tsx src/index.ts",
+    "start": "pnpm run build && node dist/index.js",
+    "mcp:dev": "tsx src/runtime/stdioServer.ts",
+    "mcp:serve": "pnpm run build && node dist/runtime/stdioServer.js",
+    "lint": "tsc --noEmit -p tsconfig.build.json",
+    "test": "node --loader ts-node/esm --test",
+    "test:watch": "node --loader ts-node/esm --test --watch"
+  },
+  "dependencies": {
+    "@mask-cut/text-llm-core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0"
+  }
+}

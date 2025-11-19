@@ -1,16 +1,15 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.OpenAICompatibleClient = void 0;
-const cross_fetch_1 = __importDefault(require("cross-fetch"));
-class OpenAICompatibleClient {
+function resolveFetch() {
+    if (typeof globalThis.fetch === 'function') {
+        return globalThis.fetch;
+    }
+    throw new Error('Global fetch API is not available in this runtime. Provide fetchImpl when constructing OpenAICompatibleClient.');
+}
+export class OpenAICompatibleClient {
     constructor(baseUrl, apiKey, defaultModel, options = {}) {
         this.baseUrl = baseUrl.replace(/\/$/, '');
         this.apiKey = apiKey;
         this.defaultModel = defaultModel;
-        this.fetchImpl = options.fetchImpl ?? cross_fetch_1.default;
+        this.fetchImpl = options.fetchImpl ?? resolveFetch();
     }
     async complete(req) {
         const model = req.model || this.defaultModel;
@@ -56,5 +55,4 @@ class OpenAICompatibleClient {
         };
     }
 }
-exports.OpenAICompatibleClient = OpenAICompatibleClient;
-exports.default = OpenAICompatibleClient;
+export default OpenAICompatibleClient;

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2025-11-19T11:03:54.813Z",
+  "endpointLabel": "mcp-default",
+  "timeoutMs": 60000,
+  "localModel": {
+    "engine": "customScript",
+    "modelPath": "C:\\Users\\Junpei\\app\\Mask-Cut\\apps\\mcp\\local-models\\remote-openai-backend.mjs"
+  }
+}

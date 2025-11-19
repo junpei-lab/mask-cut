@@ -109,11 +109,20 @@ export class SettingsService {
       timeoutMs: sanitizedTimeout,
     } satisfies Omit<AppSettingsRecord, 'lastUpdatedAt'>;
 
+    const previousSettings = await this.getSettings();
+    const vaultChanged = previousSettings.vaultKeyId !== normalized.vaultKeyId;
+
     let apiKey: string | undefined = input.apiKey?.trim() || undefined;
     if (!apiKey) {
       apiKey = (await this.secureStore.getSecret(normalized.vaultKeyId)) ?? undefined;
+      if (!apiKey && vaultChanged) {
+        const existing = await this.secureStore.getSecret(previousSettings.vaultKeyId);
+        if (existing) {
+          await this.secureStore.setSecret(normalized.vaultKeyId, existing);
+          apiKey = existing;
+        }
+      }
     }
-
     try {
       await this.connectivityTester.test({
         endpointUrl: normalized.endpointUrl,
@@ -149,12 +158,12 @@ export class SettingsService {
     const errors: SettingsValidationErrors = {};
 
     if (!input.endpointUrl || !input.endpointUrl.trim()) {
-      errors.endpointUrl = '接続先 URL を入力してください';
+      errors.endpointUrl = '接続�E URL を�E力してください';
     } else {
       try {
         const url = new URL(input.endpointUrl.trim());
         if (!/^https?:$/.test(url.protocol)) {
-          errors.endpointUrl = 'http または https の URL を指定してください';
+          errors.endpointUrl = 'http また�E https の URL を指定してください';
         }
       } catch {
         errors.endpointUrl = '有効な URL ではありません';
@@ -162,15 +171,15 @@ export class SettingsService {
     }
 
     if (!input.modelName || !input.modelName.trim()) {
-      errors.modelName = 'モデル名を入力してください';
+      errors.modelName = 'モチE��名を入力してください';
     }
 
     if (!input.vaultKeyId || !input.vaultKeyId.trim()) {
-      errors.vaultKeyId = 'API キー参照 ID を入力してください';
+      errors.vaultKeyId = 'API キー参�E ID を�E力してください';
     }
 
     if (typeof input.timeoutMs === 'number' && input.timeoutMs <= 0) {
-      errors.timeoutMs = 'タイムアウトは 0 より大きい値にしてください';
+      errors.timeoutMs = 'タイムアウト�E 0 より大きい値にしてください';
     }
 
     return errors;
@@ -180,3 +189,4 @@ export class SettingsService {
     this.listeners.forEach((listener) => listener(record));
   }
 }
+
